@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Recognition Attendance System</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <header class="text-center mb-10">
+            <h1 class="text-4xl font-bold text-white mb-2">Face Recognition Attendance System</h1>
+            <p class="text-gray-200">{{ datetoday2 }}</p>
+        </header>
+
+        <!-- Main Content -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Left Column - Controls -->
+            <div class="glass-effect rounded-lg p-6 space-y-6">
+                <div class="text-center">
+                    <h2 class="text-2xl font-semibold text-white mb-4">System Controls</h2>
+                    <div class="space-y-4">
+                        <a href="/start" class="block w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-lg transition duration-300">
+                            Start Recognition
+                        </a>
+                        
+                        <button onclick="document.getElementById('addUserModal').classList.remove('hidden')" 
+                                class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg transition duration-300">
+                            Add New User
+                        </button>
+
+                        <form action="/delete_attendance" method="POST" class="inline-block w-full">
+                            <button type="submit" class="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-3 px-4 rounded-lg transition duration-300">
+                                Clear Attendance
+                            </button>
+                        </form>
+
+                        <form action="/delete_all_users" method="POST" class="inline-block w-full">
+                            <button type="submit" class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-4 rounded-lg transition duration-300">
+                                Delete All Users
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Statistics -->
+                <div class="mt-8">
+                    <h3 class="text-xl font-semibold text-white mb-4">Statistics</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-white bg-opacity-20 rounded-lg p-4">
+                            <p class="text-gray-200">Total Users</p>
+                            <p class="text-2xl font-bold text-white">{{ totalreg }}</p>
+                        </div>
+                        <div class="bg-white bg-opacity-20 rounded-lg p-4">
+                            <p class="text-gray-200">Today's Attendance</p>
+                            <p class="text-2xl font-bold text-white">{{ l }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column - Attendance List -->
+            <div class="glass-effect rounded-lg p-6">
+                <h2 class="text-2xl font-semibold text-white mb-4">Today's Attendance</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-white">
+                        <thead>
+                            <tr class="border-b border-gray-400">
+                                <th class="py-2 px-4 text-left">Name</th>
+                                <th class="py-2 px-4 text-left">Roll</th>
+                                <th class="py-2 px-4 text-left">Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for i in range(l) %}
+                            <tr class="border-b border-gray-400 hover:bg-white hover:bg-opacity-10">
+                                <td class="py-2 px-4">{{ names[i] }}</td>
+                                <td class="py-2 px-4">{{ rolls[i] }}</td>
+                                <td class="py-2 px-4">{{ times[i] }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add User Modal -->
+        <div id="addUserModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+            <div class="bg-white rounded-lg p-8 max-w-md w-full">
+                <h2 class="text-2xl font-bold mb-4">Add New User</h2>
+                <form action="/add" method="POST">
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="newusername">
+                            Name
+                        </label>
+                        <input type="text" id="newusername" name="newusername" required
+                               class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="newuserid">
+                            Roll Number
+                        </label>
+                        <input type="text" id="newuserid" name="newuserid" required
+                               class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    </div>
+                    <div class="flex justify-end space-x-4">
+                        <button type="button" onclick="document.getElementById('addUserModal').classList.add('hidden')"
+                                class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                            Cancel
+                        </button>
+                        <button type="submit"
+                                class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                            Add User
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {% if mess %}
+    <!-- Alert Message -->
+    <div class="fixed bottom-4 right-4">
+        <div class="bg-red-500 text-white px-6 py-4 rounded-lg shadow-lg">
+            {{ mess }}
+        </div>
+    </div>
+    {% endif %}
+</body>
+</html>
