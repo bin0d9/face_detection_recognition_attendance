@@ -1,14 +1,16 @@
 import cv2
 import os
-from flask import Flask, request, render_template, redirect, url_for, jsonify
+from flask import Flask, request, render_template, redirect, url_for, jsonify, session, flash
 from datetime import date, datetime
 import numpy as np
 from sklearn.neighbors import KNeighborsClassifier
 import pandas as pd
 import joblib
 import shutil
+from functools import wraps
 
 app = Flask(__name__)
+app.secret_key = 'your_secret_key_here'  # Change this to a secure random key in production
 
 nimgs = 10
 
@@ -29,8 +31,17 @@ if f'Attendance-{datetoday}.csv' not in os.listdir('Attendance'):
     with open(f'Attendance/Attendance-{datetoday}.csv', 'w') as f:
         f.write('Name,Roll,Time')
 
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'logged_in' not in session:
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
+
 def totalreg():
     return len(os.listdir('static/faces'))
+
 
 def extract_faces(img):
     try:
@@ -89,6 +100,25 @@ def getallusers():
         rolls.append(roll)
 
     return userlist, names, rolls, l
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        
+        if username == 'admin' and password == 'password':
+            session['logged_in'] = True
+            return redirect(url_for('home'))
+        else:
+            flash('Invalid credentials. Please try again.')
+    
+    return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    session.pop('logged_in', None)
+    return redirect(url_for('login'))
 
 @app.route('/')
 def home():
